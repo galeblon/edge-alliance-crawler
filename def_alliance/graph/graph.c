@@ -14,20 +14,60 @@ struct graph new_graph(uint64_t nvertices)
 {
     struct graph g;
     g.n = nvertices;
-    g.v = malloc(nvertices * sizeof(struct vertex));
 
-    if (!g.v) {
-        error("Memory allocation for vertices table failed");
+    if (g.n == 0) {
+        return g;
     }
+
+    g.v = malloc(sizeof(struct vertex));
+    if (!g.v) {
+        error("Memory allocation for vertex failed");
+        delete_graph(&g);
+        return NULL;
+    }
+    g.v->id = 0;
+
+    struct vertex * v = g.v;
+    for (g.id_tally = 1; g.id_tally < g.n; g.id_tally++) {
+        v->next = malloc(sizeof(struct vertex));
+        if (!v->next) {
+            error("Memory allocation for vertex failed");
+            delete_graph(&g);
+            return NULL;
+        }
+        v = v->next;
+        v->id = g.id_tally;
+    }
+    v->next = NULL;
 
     return g;
 }
-void add_edge_to(struct vertex * v, uint64_t to)
-{
-    struct edge * e = NULL;
 
-    if (v->edge) {
-        struct edge * next = v->edge;
+struct vertex * get_vertex(struct graph * g, uint64_t id)
+{
+    struct vertex * v = NULL;
+    if (g->v) {
+        v = g->v;
+        if (v->id == id) {
+            return v;
+        }
+
+        while (v->next) {
+            v = v->next;
+            if (v->id == id) {
+                return v;
+            }
+        }
+    }
+    return NULL;
+}
+
+void add_edge(struct vertex * from, struct vertex * to)
+{
+    struct edge* e = NULL;
+
+    if (from->edge) {
+        struct edge* next = from->edge;
 
         while (next) {
             if (next->to == to)
@@ -38,10 +78,11 @@ void add_edge_to(struct vertex * v, uint64_t to)
 
         e->next = malloc(sizeof(struct edge));
         e = e->next;
-    } else {
+    }
+    else {
         // There are no edges for this vertex yet
-        v->edge = malloc(sizeof(struct edge));
-        e = v->edge;
+        from->edge = malloc(sizeof(struct edge));
+        e = from->edge;
     }
 
     if (!e) {
@@ -53,49 +94,195 @@ void add_edge_to(struct vertex * v, uint64_t to)
     e->to = to;
 }
 
-struct vertex * get_vertex(struct graph * g, uint64_t index)
+void delete_edge(struct vertex* from, struct vertex* to)
 {
-    return &g->v[index];
-}
+    struct edge* e = NULL;
 
-void add_edge(struct graph * g, uint64_t from, uint64_t to)
-{
-    add_edge_to(get_vertex(g, from), to);
+    if (from->edge) {
+        struct edge* next = from->edge;
+        if (next->to == to) {
+            from->edge = next->next;
+            free(next);
+            return;
+        }
+
+        while (next) {
+            if (next->to == to) {
+                e->next = next->next;
+                free(next);
+                return;
+            }
+            e = next;
+            next = next->next;
+        }
+    }
 }
 
 void delete_graph(struct graph * g)
 {
     struct edge * e, * e_next;
+    struct vertex* v, * v_next;
 
     if (g->v == NULL) {
         error("Vertices table cannot be freed, because it is not allocated");
         return;
     }
 
-    for (int i = 0; i < g->n; i++) {
-        e = g->v[i].edge;
+    v = g->v;
+    while (v) {
+        e = v->edge;
         while (e) {
             e_next = e->next;
             free(e);
             e = e_next;
         }
-    }
 
-    free(g->v);
+        v_next = v->next;
+        free(v);
+        v = v_next;
+    }
 }
 
 void print_graph(struct graph * g)
 {
     struct edge * e;
+    struct vertex* v;
+
     printf("N=%lu\n", g->n);
-    for (uint64_t i = 0; i < g->n; i++) {
-        printf("  %lu :", i);
-        e = g->v[i].edge;
+    v = g->v;
+    while (v) {
+        printf("  %lu :", v->id);
+        e = v->edge;
         while (e) {
-            printf(" %lu", e->to);
+            printf(" %lu", e->to->id);
             e = e->next;
         }
         printf(";\n");
+    }
+}
+
+uint64_t get_indegree(struct vertex * v)
+{
+    struct edge* e;
+    struct vertex* v;
+    uint64_t deg = 0;
+
+    v = g->v;
+    while (v) {
+        e = v->edge;
+        while (e) {
+            if (e->to == v) {
+                deg++;
+            }
+            e = e->next;
+        }
+    }
+
+    return deg;
+}
+
+uint64_t get_outdegree(struct vertex * v)
+{
+    uint64_t deg = 0;
+    struct edge* e = v->edge;
+    while (e != NULL) {
+        deg++;
+        e = e->next;
+    }
+    return deg;
+}
+
+uint64_t get_degree(struct vertex * v)
+{
+    // As degree pertains to a simple graph and this is a digraph, this should be equal
+    return get_outdegree(v);
+}
+
+uint64_t get_degree(struct graph * g)
+{
+    struct vertex* v;
+    uint64_t deg = 0, v_deg;
+
+    v = g->v;
+    while (v) {
+        v_deg = get_degree(v);
+        deg = v_deg > deg ? v_deg : deg;
+    }
+
+    return deg;
+}
+
+bool is_balanced(struct graph * g)
+{
+    struct vertex* v;
+    bool balanced = true;
+    uint64_t v_indeg, v_outdeg;
+
+    v = g->v;
+    while (v) {
+        v_indeg = get_indegree(v);
+        v_outdeg = get_outdegree(v);
+        balanced &= (v_indeg == v_outdeg);
+    }
+
+    return balanced;
+}
+
+struct vertex * add_vertex(struct graph * g)
+{
+    // Do not assume an order
+    struct vertex * v = NULL;
+
+    if (g->v) {
+        struct vertex * next = g->v;
+
+        g->v = malloc(sizeof(struct vertex));
+        v = g->v;
+        v->next = next;
+    }
+    else {
+        // There are no vertices for this graph yet
+        g->v = malloc(sizeof(struct vertex));
+        v = g->v;
+        v->next = NULL;
+    }
+
+    if (!v) {
+        error("Memory allocation for vertex failed");
+        return;
+    }
+
+    v->edge = NULL;
+    v->id = g->id_tally++;
+
+    g->n++;
+
+    return v;
+}
+
+void delete_vertex(struct graph * g, struct vertex * v)
+{
+    struct vertex * v = NULL;
+
+    if (g->v) {
+        struct vertex * next = g->v;
+        if (next == v) {
+            g->v = next->next;
+            free(next);
+            g->n--;
+            return;
+        }
+
+        while (next) {
+            if (next == v) {
+                v->next = next->next;
+                free(next);
+                g->n--;
+                return;
+            }
+            v = next;
+            next = next->next;
+        }
     }
 }
 
@@ -154,8 +341,10 @@ struct graph parse_graph6(const char * buff)
             }
 
             if (x & 32) {
-                add_edge(&g, i, j);
-                add_edge(&g, j, i);
+                v_i = get_vertex(&g, i);
+                v_j = get_vertex(&g, j);
+                add_edge(v_i, v_j);
+                add_edge(v_j, v_i);
             }
 
             x <<= 1;
