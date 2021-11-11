@@ -1,3 +1,9 @@
+#ifndef GRAPH_GRAPH_H_
+#define GRAPH_GRAPH_H_
+
+
+#include<stdint.h>
+
 struct edge {
     // Next edge in the Linked List
     struct edge * next;
@@ -35,8 +41,12 @@ void delete_edge(struct vertex * from, struct vertex * to);
 uint64_t get_indegree(struct graph* g, struct vertex * v);
 uint64_t get_outdegree(struct vertex * v);
 uint64_t get_degree(struct vertex* v);
-uint64_t get_degree(struct graph* g);
-bool is_balanced(struct graph * g);
+uint64_t get_degree_graph(struct graph* g);
+int is_balanced(struct graph * g);
 struct vertex * add_vertex(struct graph * g);
 void isolate_vertex(struct graph* g, struct vertex* v);
 void delete_vertex(struct graph* g, struct vertex* v);
+
+// TODO edge capacities
+
+#endif

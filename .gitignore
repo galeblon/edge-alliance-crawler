@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Eclipse
+*.cproject
+*.project
+*.settings
+
 # User-specific files
 *.rsuser
 *.suo
