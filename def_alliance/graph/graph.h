@@ -32,10 +32,11 @@ void delete_graph(struct graph * g);
 void print_graph(struct graph * g);
 
 void delete_edge(struct vertex * from, struct vertex * to);
-uint64_t get_indegree(struct vertex * v);
+uint64_t get_indegree(struct graph* g, struct vertex * v);
 uint64_t get_outdegree(struct vertex * v);
 uint64_t get_degree(struct vertex* v);
 uint64_t get_degree(struct graph* g);
 bool is_balanced(struct graph * g);
 struct vertex * add_vertex(struct graph * g);
+void isolate_vertex(struct graph* g, struct vertex* v);
 void delete_vertex(struct graph* g, struct vertex* v);

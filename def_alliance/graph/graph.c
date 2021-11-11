@@ -1,3 +1,4 @@
+#include<stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,8 +23,7 @@ struct graph new_graph(uint64_t nvertices)
     g.v = malloc(sizeof(struct vertex));
     if (!g.v) {
         error("Memory allocation for vertex failed");
-        delete_graph(&g);
-        return NULL;
+        exit(-1);
     }
     g.v->id = 0;
 
@@ -33,7 +33,7 @@ struct graph new_graph(uint64_t nvertices)
         if (!v->next) {
             error("Memory allocation for vertex failed");
             delete_graph(&g);
-            return NULL;
+            exit(-2);
         }
         v = v->next;
         v->id = g.id_tally;
@@ -45,21 +45,13 @@ struct graph new_graph(uint64_t nvertices)
 
 struct vertex * get_vertex(struct graph * g, uint64_t id)
 {
-    struct vertex * v = NULL;
-    if (g->v) {
-        v = g->v;
+    struct vertex* v = g->v;
+    while (v) {
         if (v->id == id) {
             return v;
         }
-
-        while (v->next) {
-            v = v->next;
-            if (v->id == id) {
-                return v;
-            }
-        }
+        v = v->next;
     }
-    return NULL;
 }
 
 void add_edge(struct vertex * from, struct vertex * to)
@@ -96,13 +88,13 @@ void add_edge(struct vertex * from, struct vertex * to)
 
 void delete_edge(struct vertex* from, struct vertex* to)
 {
-    struct edge* e = NULL;
+    struct edge* e = from->edge;
 
-    if (from->edge) {
-        struct edge* next = from->edge;
-        if (next->to == to) {
-            from->edge = next->next;
-            free(next);
+    if (e) {
+        struct edge* next = e->next;
+        if (e->to == to) {
+            from->edge = next;
+            free(e);
             return;
         }
 
@@ -158,18 +150,19 @@ void print_graph(struct graph * g)
             e = e->next;
         }
         printf(";\n");
+        v = v->next;
     }
 }
 
-uint64_t get_indegree(struct vertex * v)
+uint64_t get_indegree(struct graph* g, struct vertex * v)
 {
     struct edge* e;
-    struct vertex* v;
+    struct vertex* v_checked;
     uint64_t deg = 0;
 
-    v = g->v;
-    while (v) {
-        e = v->edge;
+    v_checked = g->v;
+    while (v_checked) {
+        e = v_checked->edge;
         while (e) {
             if (e->to == v) {
                 deg++;
@@ -220,7 +213,7 @@ bool is_balanced(struct graph * g)
 
     v = g->v;
     while (v) {
-        v_indeg = get_indegree(v);
+        v_indeg = get_indegree(g, v);
         v_outdeg = get_outdegree(v);
         balanced &= (v_indeg == v_outdeg);
     }
@@ -228,9 +221,9 @@ bool is_balanced(struct graph * g)
     return balanced;
 }
 
+// Add vertex at the start of the vertex linked list. The list is not ordered by index.
 struct vertex * add_vertex(struct graph * g)
 {
-    // Do not assume an order
     struct vertex * v = NULL;
 
     if (g->v) {
@@ -247,7 +240,7 @@ struct vertex * add_vertex(struct graph * g)
         v->next = NULL;
     }
 
-    if (!v) {
+    if (!g->v) {
         error("Memory allocation for vertex failed");
         return;
     }
@@ -260,27 +253,46 @@ struct vertex * add_vertex(struct graph * g)
     return v;
 }
 
+//Makes vertex an isolated vertex, that is: deletes every edge related to it.
+void isolate_vertex(struct graph * g, struct vertex * v)
+{
+    struct edge * e = v->edge, * e_next;
+    while (e) {
+        e_next = e->next;
+        free(e);
+        e = e_next;
+    }
+
+    struct vertex* v_checked = g->v;
+    while (v_checked) {
+        delete_edge(v_checked, v);
+        v_checked = v_checked->next;
+    }
+}
+
 void delete_vertex(struct graph * g, struct vertex * v)
 {
-    struct vertex * v = NULL;
+    struct vertex * v_checked = g->v;
 
-    if (g->v) {
-        struct vertex * next = g->v;
-        if (next == v) {
-            g->v = next->next;
-            free(next);
+    if (v_checked) {
+        struct vertex * next = v_checked->next;
+        if (v_checked == v) {
+            g->v = next;
+            isolate_vertex(g, v_checked);
+            free(v_checked);
             g->n--;
             return;
         }
 
         while (next) {
             if (next == v) {
-                v->next = next->next;
+                v_checked->next = next->next;
+                isolate_vertex(g, next);
                 free(next);
                 g->n--;
                 return;
             }
-            v = next;
+            v_checked = next;
             next = next->next;
         }
     }
@@ -328,6 +340,7 @@ struct graph parse_graph6(const char * buff)
     uint8_t x;
     const char * p = buff + offset;
 
+    struct vertex* v_i, * v_j;
     for (int j = 1; j < nvertices; ++j) {
         for (int i = 0; i < j; ++i) {
 
