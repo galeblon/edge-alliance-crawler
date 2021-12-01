@@ -223,6 +223,11 @@ int is_balanced(struct graph * g)
     return balanced;
 }
 
+// TODO Add vertex if given id is not already present, otherwise return existing vertex
+struct vertex * add_vertex_unique(struct graph *g, uint64_t id) {
+	return NULL;
+}
+
 // Add vertex at the start of the vertex linked list. The list is not ordered by index.
 struct vertex * add_vertex(struct graph * g)
 {
