@@ -5,10 +5,15 @@
 #include<stdint.h>
 
 struct edge {
+    // Edge id in its from vertex
+    uint64_t id;
     // Next edge in the Linked List
     struct edge * next;
     // Pointer to the vertex that the edge is leading to
     struct vertex * to;
+    // The cursed C decorator, that surely has a more proper name
+    // If a specific algorithm requires some additional fields, pack them in a struct and insert here to keep O(1) access times
+    void * decorator;
 };
 
 struct vertex {
@@ -16,8 +21,14 @@ struct vertex {
     uint64_t id;
     // Linked List of vertices
     struct vertex * next;
+    // Id counter for the edges
+    // Notice that this simple id algorithm is the limit on edges operations
+    uint64_t id_tally;
     // Linked List of edges from this vertex
     struct edge * edge;
+    // The cursed C decorator, that surely has a more proper name
+    // If a specific algorithm requires some additional fields, pack them in a struct and insert here to keep O(1) access times
+    void * decorator;
 };
 
 struct graph {
@@ -28,6 +39,9 @@ struct graph {
     uint64_t id_tally;
     // Linked List of vertices
     struct vertex * v;
+    // The cursed C decorator, that surely has a more proper name
+    // If a specific algorithm requires some additional fields, pack them in a struct and insert here to keep O(1) access times
+    void * decorator;
 };
 
 struct graph new_graph(uint64_t nvertices);

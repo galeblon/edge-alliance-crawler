@@ -86,6 +86,7 @@ void add_edge(struct vertex * from, struct vertex * to)
 
     e->next = NULL;
     e->to = to;
+    e->id = from->id_tally++;
 }
 
 void delete_edge(struct vertex* from, struct vertex* to)
