@@ -18,6 +18,16 @@ int64_t ford_fulkerson(struct graph * g, struct vertex * source, struct vertex *
 	return edmonds_karp(g, source, target, k);
 }
 
+struct vertex_queue * create_vertex_queue()
+{
+	struct vertex_queue * v_q = malloc(sizeof(struct vertex_queue));
+
+	v_q->first = NULL;
+	v_q->last = NULL;
+
+	return v_q;
+}
+
 void vertex_queue_push(struct vertex_queue * v_q, struct vertex_queue_node * v_q_n)
 {
 	if ((v_q->first == NULL) && (v_q->last == NULL))
@@ -64,12 +74,12 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 {
 	int64_t max_flow = 0;
 
-	struct vertex_queue v_q;
+	struct vertex_queue * v_q = create_vertex_queue();
 
 	struct vertex_queue_node * v_q_n_s = malloc(sizeof(struct vertex_queue_node));
 	v_q_n_s->v = source;
 
-	vertex_queue_push(&v_q, v_q_n_s);
+	vertex_queue_push(v_q, v_q_n_s);
 
 
 	struct vertex_queue_node * v_q_n;
@@ -110,9 +120,9 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 	{
 		found_new_path = 0;
 
-		while (v_q.first)
+		while (v_q->first)
 		{
-			v_q_n = vertex_queue_pop(&v_q);
+			v_q_n = vertex_queue_pop(v_q);
 			v = v_q_n->v;
 			free(v_q_n);
 
@@ -158,7 +168,7 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 						v_p_n->next = v_e_d->next;
 						v_e_d->next = v_p_n;
 
-						vertex_queue_push(&v_q, v_q_n);
+						vertex_queue_push(v_q, v_q_n);
 					}
 				}
 				e = e->next;
@@ -194,6 +204,8 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 
 		v = v->next;
 	}
+
+	free(v_q);
 
 	return max_flow;
 }
