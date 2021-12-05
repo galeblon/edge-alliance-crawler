@@ -70,17 +70,47 @@ struct vertex_queue_node* vertex_queue_pop(struct vertex_queue * v_q)
 	return result;
 }
 
+void print_graph_ek(struct graph * g)
+{
+	struct edge* e;
+	struct vertex* v;
+	struct edge_ek_decorator* e_e_d;
+	struct vertex_ek_decorator* v_e_d;
+	struct vertex_path_node* v_p_n;
+
+	printf("N=%lu\n", g->n);
+	v = g->v;
+	while (v) {
+		printf("  V_id=%lu :\n", v->id);
+
+		printf("    EK :\n");
+		v_e_d = (struct vertex_ek_decorator*)v->decorator;
+		printf("      Vis=%lu\n", v_e_d->visited);
+		printf("      mcf=%lu\n", v_e_d->min_path_cf);
+		printf("      PATH :\n");
+		v_p_n = v_e_d->next;
+		while (v_p_n) {
+			e_e_d = (struct edge_ek_decorator *)v_p_n->e->decorator;
+			printf("        E=(%lu, %lu) - f:%lu\n", e_e_d->from->id, v_p_n->e->to->id, e_e_d->f);
+			v_p_n = v_p_n->next;
+		}
+
+		printf("    EDGES :\n");
+		e = v->edge;
+		while (e) {
+			printf("      E_to=%lu\n", e->to->id);
+			e = e->next;
+		}
+		printf(";\n");
+		v = v->next;
+	}
+}
+
 int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * target, int64_t k)
 {
 	int64_t max_flow = 0;
 
 	struct vertex_queue * v_q = create_vertex_queue();
-
-	struct vertex_queue_node * v_q_n_s = malloc(sizeof(struct vertex_queue_node));
-	v_q_n_s->v = source;
-
-	vertex_queue_push(v_q, v_q_n_s);
-
 
 	struct vertex_queue_node * v_q_n;
 	struct vertex_path_node * v_p_n;
@@ -113,12 +143,20 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 		v = v->next;
 	}
 
+	//print_graph_ek(g);
 
 	// While there is a path, go
 	int found_new_path = 1;
 	while (found_new_path)
 	{
-		found_new_path = 0;
+		while (v_q->first)
+		{
+			free(vertex_queue_pop(v_q));
+		}
+		found_new_path = 0; 
+		v_q_n = malloc(sizeof(struct vertex_queue_node));
+		v_q_n->v = source;
+		vertex_queue_push(v_q, v_q_n);
 
 		while (v_q->first)
 		{
@@ -131,17 +169,29 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 				v_e_d = (struct vertex_ek_decorator*)e->to->decorator;
 				if (!v_e_d->visited) {
 					v_q_n = malloc(sizeof(struct vertex_queue_node));
-					v_q_n->v = v;
+					v_q_n->v = e->to;
 
 					e_e_d = (struct edge_ek_decorator *)e->decorator;
+					e_e_d->from = v;
 					e_cf = capacity(v, e, source, target, k) - e_e_d->f;
 					if (e_cf > 0) {
+						v_e_d->visited = 1;
+
+						v_e_d = (struct vertex_ek_decorator*)v->decorator;
+						v_p_n = v_e_d->next;
+						v_e_d = (struct vertex_ek_decorator*)e->to->decorator;
+						v_e_d->next = v_p_n;
+						v_p_n = malloc(sizeof(struct vertex_path_node));
+						v_p_n->e = e;
+						v_p_n->next = v_e_d->next;
+						v_e_d->next = v_p_n;
+
 						if (e->to == target)
 						{
 							found_new_path = 1;
 							max_flow += e_cf;
 
-							v_e_d = (struct vertex_ek_decorator *)v->decorator;
+							v_e_d = (struct vertex_ek_decorator *)e->to->decorator;
 							v_p_n = v_e_d->next;
 							while (v_p_n)
 							{
@@ -149,32 +199,47 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 								e_e_d->f += e_cf;
 								v_p_n = v_p_n->next;
 							}
-						}
 
-						v_p_n = v_e_d->next;
-						v_e_d = (struct vertex_ek_decorator *)e->to->decorator;
-						if (v_e_d->min_path_cf == 0)
-						{
-							v_e_d->min_path_cf = e_cf;
+							free(v_q_n);
 						}
 						else
 						{
-							v_e_d->min_path_cf = (v_e_d->min_path_cf > e_cf) ? e_cf : v_e_d->min_path_cf;
+							v_e_d = (struct vertex_ek_decorator*)e->to->decorator;
+							if (v_e_d->min_path_cf == 0)
+							{
+								v_e_d->min_path_cf = e_cf;
+							}
+							else
+							{
+								v_e_d->min_path_cf = (v_e_d->min_path_cf > e_cf) ? e_cf : v_e_d->min_path_cf;
+							}
+
+							vertex_queue_push(v_q, v_q_n);
 						}
-
-						v_e_d->next = v_p_n;
-						v_p_n = malloc(sizeof(struct vertex_path_node));
-						v_p_n->e = e;
-						v_p_n->next = v_e_d->next;
-						v_e_d->next = v_p_n;
-
-						vertex_queue_push(v_q, v_q_n);
+					}
+					else 
+					{
+						free(v_q_n);
 					}
 				}
+
+				if (found_new_path)
+				{
+					break;
+				}
+
 				e = e->next;
+			}
+
+			if (found_new_path)
+			{
+				break;
 			}
 		}
 
+		//print_graph_ek(g);
+
+		v = g->v;
 		while (v) {
 			v_e_d = (struct vertex_ek_decorator *)v->decorator;
 			v_e_d->visited = (v == source) ? 1 : 0;

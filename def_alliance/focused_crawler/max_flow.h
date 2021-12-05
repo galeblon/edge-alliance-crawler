@@ -21,6 +21,7 @@ struct vertex_queue {
 };
 
 struct edge_ek_decorator {
+	struct vertex * from;
 	int64_t f;
 };
 
