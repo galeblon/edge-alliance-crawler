@@ -37,10 +37,12 @@ struct vertex_ek_decorator {
 	struct vertex_path_node * next;
 };
 
-int capacity(struct vertex * from, struct edge * e, struct vertex * source, struct vertex * target, int64_t k);
+int64_t capacity(struct vertex * from, struct edge * e, struct vertex * source, struct vertex * target, int64_t k);
 
-int ford_fulkerson(struct graph * g, struct vertex * source, struct vertex * target, int64_t k);
-int edmonds_karp(struct graph* g, struct vertex* source, struct vertex* target, int64_t k);
+int64_t ford_fulkerson(struct graph * g, struct vertex * source, struct vertex * target, int64_t k);
+
+int64_t edmonds_karp(struct graph* g, struct vertex* source, struct vertex* target, int64_t k);
+void free_edge_ek_decorators(struct graph * g);
 
 struct graph* max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target);
 

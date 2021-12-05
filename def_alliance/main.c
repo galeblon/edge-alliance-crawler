@@ -1,7 +1,29 @@
 #include "./graph/graph.h"
+#include "./focused_crawler/max_flow.h"
 
 int main(void)
 {
+    // Max Flow Test
+    // Setup
+    int64_t k = 4;
+    struct graph g_flow;
+    g_flow = parse_graph6("E?Fg"); // Catholic cross graph
+    struct vertex * v_flow_source = add_vertex(&g_flow);
+    struct vertex * v_flow_target = add_vertex(&g_flow);
+    add_edge(v_flow_source, get_vertex(&g_flow, 0));
+    add_edge(v_flow_source, get_vertex(&g_flow, 1));
+    add_edge(v_flow_source, get_vertex(&g_flow, 3));
+    add_edge(get_vertex(&g_flow, 2), v_flow_target);
+    add_edge(get_vertex(&g_flow, 4), v_flow_target);
+
+    // Execute
+    int64_t max_flow = edmonds_karp(&g_flow, v_flow_source, v_flow_target, k);
+
+    // Teardown
+    free_edge_ek_decorators(&g_flow);
+    delete_graph(&g_flow);
+    //End of Max Flow Test
+
     struct graph g;
     g = parse_graph6("I?rFUzsjw");
     print_graph(&g);

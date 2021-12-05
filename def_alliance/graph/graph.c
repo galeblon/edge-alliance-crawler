@@ -26,6 +26,7 @@ struct graph new_graph(uint64_t nvertices)
         exit(-1);
     }
     g.v->id = 0;
+    g.v->edge = NULL;
 
     struct vertex * v = g.v;
     for (g.id_tally = 1; g.id_tally < g.n; g.id_tally++) {
@@ -36,6 +37,7 @@ struct graph new_graph(uint64_t nvertices)
             exit(-2);
         }
         v = v->next;
+        v->edge = NULL;
         v->id = g.id_tally;
     }
     v->next = NULL;

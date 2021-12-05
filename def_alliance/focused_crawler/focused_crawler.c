@@ -8,7 +8,7 @@ void extend_list_by_metric_value(
 		struct vertex* feasible_list[],
 		int feasible_len,
 		uint64_t(*metric)(struct graph*, struct vertex*),
-		int metric_seeked_value,)
+		int metric_seeked_value)
 {
 	for(uint64_t feasible_vertex_index = 0; feasible_vertex_index < feasible_len; feasible_vertex_index++ ) {
 		struct vertex* feasible_vertex = feasible_list[feasible_vertex_index];
