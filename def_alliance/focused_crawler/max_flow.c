@@ -244,7 +244,7 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 			v_e_d = (struct vertex_ek_decorator *)v->decorator;
 			v_e_d->visited = (v == source) ? 1 : 0;
 			v_e_d->min_path_cf = 0;
-			if (!v_e_d->next)
+			if (v_e_d->next)
 			{
 				free(v_e_d->next);
 				v_e_d->next = NULL;
@@ -260,7 +260,7 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 	v = g->v;
 	while (v) {
 		v_e_d = (struct vertex_ek_decorator *)v->decorator;
-		if (!v_e_d->next)
+		if (v_e_d->next)
 		{
 			free(v_e_d->next);
 			v_e_d->next = NULL;
@@ -289,5 +289,6 @@ void free_edge_ek_decorators(struct graph * g)
 
 			e = e->next;
 		}
+		v_checked = v_checked->next;
 	}
 }
