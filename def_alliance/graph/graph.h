@@ -4,6 +4,9 @@
 
 #include<stdint.h>
 
+typedef struct vertex * (*vertex_alloc_t)(void);
+typedef struct edge * (*edge_alloc_t)(void);
+
 struct edge {
     // Edge id in its from vertex
     uint64_t id;
@@ -11,9 +14,6 @@ struct edge {
     struct edge * next;
     // Pointer to the vertex that the edge is leading to
     struct vertex * to;
-    // The cursed C decorator, that surely has a more proper name
-    // If a specific algorithm requires some additional fields, pack them in a struct and insert here to keep O(1) access times
-    void * decorator;
 };
 
 struct vertex {
@@ -26,9 +26,6 @@ struct vertex {
     uint64_t id_tally;
     // Linked List of edges from this vertex
     struct edge * edge;
-    // The cursed C decorator, that surely has a more proper name
-    // If a specific algorithm requires some additional fields, pack them in a struct and insert here to keep O(1) access times
-    void * decorator;
 };
 
 struct graph {
@@ -39,14 +36,16 @@ struct graph {
     uint64_t id_tally;
     // Linked List of vertices
     struct vertex * v;
-    // The cursed C decorator, that surely has a more proper name
-    // If a specific algorithm requires some additional fields, pack them in a struct and insert here to keep O(1) access times
-    void * decorator;
+    // Vertex and edge allocators
+    vertex_alloc_t new_vertex;
+    edge_alloc_t new_edge;
 };
 
-struct graph new_graph(uint64_t nvertices);
-struct graph parse_graph6(const char * buff);
-void add_edge(struct vertex * from, struct vertex * to);
+void error(const char * msg);
+
+struct graph new_graph(uint64_t nvertices, vertex_alloc_t vertex_alloc, edge_alloc_t edge_alloc);
+struct graph parse_graph6(const char * buff, vertex_alloc_t vertex_alloc, edge_alloc_t edge_alloc);
+void add_edge(struct graph * g, struct vertex * from, struct vertex * to);
 struct vertex * get_vertex(struct graph * g, uint64_t id);
 void delete_graph(struct graph * g);
 void print_graph(struct graph * g);

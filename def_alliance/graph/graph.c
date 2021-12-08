@@ -5,13 +5,33 @@
 #include <string.h>
 #include "graph.h"
 
-static void error(const char * msg)
+void error(const char * msg)
 {
     fprintf(stderr, "ERROR: %s\n", msg);
     // TODO
 }
 
-struct graph new_graph(uint64_t nvertices)
+static struct vertex *new_vertex(void)
+{
+    struct vertex * v = (struct vertex *)malloc(sizeof(struct vertex));
+    if (!v) {
+        error("Memory allocation for vertex failed");
+        exit(-1);
+    }
+    return v;
+}
+
+static struct edge *new_edge(void)
+{
+    struct edge * e = (struct edge *)malloc(sizeof(struct edge));
+    if (!e) {
+        error("Memory allocation for edge failed");
+        exit(-1);
+    }
+    return e;
+}
+
+struct graph new_graph(uint64_t nvertices, vertex_alloc_t vertex_alloc, edge_alloc_t edge_alloc)
 {
     struct graph g;
     g.n = nvertices;
@@ -20,22 +40,26 @@ struct graph new_graph(uint64_t nvertices)
         return g;
     }
 
-    g.v = malloc(sizeof(struct vertex));
-    if (!g.v) {
-        error("Memory allocation for vertex failed");
-        exit(-1);
+    if (vertex_alloc) {
+        g.new_vertex = vertex_alloc;
     }
+    else {
+        g.new_vertex = new_vertex;
+    }
+    if (edge_alloc) {
+        g.new_edge = edge_alloc;
+    }
+    else {
+        g.new_edge = new_edge;
+    }
+
+    g.v = g.new_vertex();
     g.v->id = 0;
     g.v->edge = NULL;
 
     struct vertex * v = g.v;
     for (g.id_tally = 1; g.id_tally < g.n; g.id_tally++) {
-        v->next = malloc(sizeof(struct vertex));
-        if (!v->next) {
-            error("Memory allocation for vertex failed");
-            delete_graph(&g);
-            exit(-2);
-        }
+        v->next = g.new_vertex();
         v = v->next;
         v->edge = NULL;
         v->id = g.id_tally;
@@ -58,7 +82,7 @@ struct vertex * get_vertex(struct graph * g, uint64_t id)
     return NULL;
 }
 
-void add_edge(struct vertex * from, struct vertex * to)
+void add_edge(struct graph * g, struct vertex * from, struct vertex * to)
 {
     struct edge* e = NULL;
 
@@ -72,18 +96,13 @@ void add_edge(struct vertex * from, struct vertex * to)
             next = next->next;
         }
 
-        e->next = malloc(sizeof(struct edge));
+        e->next = g->new_edge();
         e = e->next;
     }
     else {
         // There are no edges for this vertex yet
-        from->edge = malloc(sizeof(struct edge));
+        from->edge = g->new_edge();
         e = from->edge;
-    }
-
-    if (!e) {
-        error("Memory allocation for edge failed");
-        return;
     }
 
     e->next = NULL;
@@ -239,13 +258,13 @@ struct vertex * add_vertex(struct graph * g)
     if (g->v) {
         struct vertex * next = g->v;
 
-        g->v = malloc(sizeof(struct vertex));
+        g->v = g->new_vertex();
         v = g->v;
         v->next = next;
     }
     else {
         // There are no vertices for this graph yet
-        g->v = malloc(sizeof(struct vertex));
+        g->v = g->new_vertex();
         v = g->v;
         v->next = NULL;
     }
@@ -339,13 +358,13 @@ int N_inverse(uint64_t * out, const char * bytes)
     return nbytes;
 }
 
-struct graph parse_graph6(const char * buff)
+struct graph parse_graph6(const char * buff, vertex_alloc_t vertex_alloc, edge_alloc_t edge_alloc)
 {
     int len = strlen(buff);
     uint64_t nvertices = 0;
     int offset = N_inverse(&nvertices, buff);
 
-    struct graph g = new_graph(nvertices);
+    struct graph g = new_graph(nvertices, vertex_alloc, edge_alloc);
     int k = 1;
     uint8_t x;
     const char * p = buff + offset;
@@ -366,8 +385,8 @@ struct graph parse_graph6(const char * buff)
             if (x & 32) {
                 v_i = get_vertex(&g, i);
                 v_j = get_vertex(&g, j);
-                add_edge(v_i, v_j);
-                add_edge(v_j, v_i);
+                add_edge(&g, v_i, v_j);
+                add_edge(&g, v_j, v_i);
             }
 
             x <<= 1;
