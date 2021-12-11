@@ -1,4 +1,6 @@
 #include "focused_crawler.h"
+#include"max_flow.h"
+#include<assert.h>
 
 void extend_list_by_metric_value(
 		struct graph* g,
@@ -100,10 +102,11 @@ struct graph induce_graph_from_crawl(struct graph* G, struct vertex* seed[], str
 	return g;
 }
 
-//TODO
-struct vertex** max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target, int* c_size) {
-	*c_size = 0;
-	return NULL;
+struct vertex** max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target, uint64_t k, uint64_t * c_size) {
+	struct vertex** c_list = source_component_min_cut_after_max_flow(g, source, target, k, c_size);
+	free_edge_ek_decorators(g);
+	free_vertex_ek_decorators(g);
+	return c_list;
 }
 
 // G is assumed to be a giant graph resulting from extensive web crawling
@@ -113,8 +116,8 @@ void focused_crawl(struct graph* G, struct vertex* seed_list[], struct vertex* s
 	struct vertex* local_seed_list[] = malloc(sizeof(struct vertex*)*k);
 	struct graph g = induce_graph_from_crawl(G, seed_list, local_seed_list, k);
 	for (uint64_t current_iteration = 0; current_iteration < iterations; current_iteration++) {
-		int c_len;
-		struct vertex* c_list[] = max_flow_cut(g, s, t, &c_len);
+		uint64_t c_len;
+		struct vertex** c_list = max_flow_cut(&g, s, t, k, &c_len);
 
 		int max_indegree = find_metric_max_value(g, get_indegree, c_list, c_len, local_seed_list, k);
 		extend_list_by_metric_value(g, local_seed_list, &k, c_list, c_len, get_indegree, max_indegree);
