@@ -22,7 +22,7 @@ struct vertex_queue {
 
 struct edge_ek_decorator {
 	struct vertex * from;
-	int64_t f;
+	uint64_t f;
 };
 
 // Goes from the current node to the source
@@ -44,6 +44,9 @@ int64_t ford_fulkerson(struct graph * g, struct vertex * source, struct vertex *
 
 int64_t edmonds_karp(struct graph* g, struct vertex* source, struct vertex* target, int64_t k);
 void free_edge_ek_decorators(struct graph * g);
+void free_vertex_ek_decorators(struct graph* g);
+
+struct vertex** source_component_min_cut_after_max_flow(struct graph* g, struct vertex* source, struct vertex* target, uint64_t k, uint64_t* source_component_size);
 
 struct graph* max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target);
 

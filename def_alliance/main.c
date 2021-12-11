@@ -9,8 +9,8 @@ int main(void)
     int64_t k = 4;
     struct graph g_flow;
     g_flow = parse_graph6("E?Fg"); // Catholic cross graph
-    struct vertex * v_flow_source = add_vertex(&g_flow);
-    struct vertex * v_flow_target = add_vertex(&g_flow);
+    struct vertex* v_flow_source = add_vertex(&g_flow);
+    struct vertex* v_flow_target = add_vertex(&g_flow);
     add_edge(v_flow_source, get_vertex(&g_flow, 0));
     add_edge(v_flow_source, get_vertex(&g_flow, 1));
     add_edge(v_flow_source, get_vertex(&g_flow, 3));
@@ -21,6 +21,7 @@ int main(void)
     int64_t max_flow = edmonds_karp(&g_flow, v_flow_source, v_flow_target, k);
 
     // Teardown
+    free_vertex_ek_decorators(&g_flow);
     free_edge_ek_decorators(&g_flow);
     delete_graph(&g_flow);
     // END 1
@@ -50,10 +51,44 @@ int main(void)
     max_flow = edmonds_karp(&g_flow, v_flow_source, v_flow_target, k);
 
     // Teardown
+    free_vertex_ek_decorators(&g_flow);
     free_edge_ek_decorators(&g_flow);
     delete_graph(&g_flow);
     // END 2
     // End of Max Flow Tests
+
+
+    // Max Flow Min Cut Tests
+    // START 1
+    // Setup
+    k = 4;
+    uint64_t flow_res, cut_res;
+    struct graph g_cut;
+    g_cut = new_graph(k + 5); // Layers: source, two vertices, one vertex, one vertex, k+1 vertices, target
+    struct vertex* v_cut_source = add_vertex(&g_cut);
+    struct vertex* v_cut_target = add_vertex(&g_cut);
+    add_edge(v_cut_source, get_vertex(&g_cut, 0));
+    add_edge(v_cut_source, get_vertex(&g_cut, 1));
+    add_edge(get_vertex(&g_cut, 0), get_vertex(&g_cut, 2));
+    add_edge(get_vertex(&g_cut, 1), get_vertex(&g_cut, 2));
+    add_edge(get_vertex(&g_cut, 2), get_vertex(&g_cut, 3));
+    for (uint64_t i = 0; i < k + 1; i++)
+    {
+        add_edge(get_vertex(&g_cut, 3), get_vertex(&g_cut, 4+i));
+        add_edge(get_vertex(&g_cut, 4 + i), v_cut_target);
+    }
+
+    // Execute
+    flow_res = edmonds_karp(&g_cut, v_cut_source, v_cut_target, k);
+    struct vertex** c_list = source_component_min_cut_after_max_flow(&g_cut, v_cut_source, v_cut_target, k, &cut_res); // Cut should happen between one vertex layers
+
+    // Teardown
+    free(c_list);
+    free_vertex_ek_decorators(&g_cut);
+    free_edge_ek_decorators(&g_cut);
+    delete_graph(&g_cut);
+    // END 1
+    // End of Max Flow Min Cut Tests
 
     struct graph g;
     g = parse_graph6("I?rFUzsjw");
