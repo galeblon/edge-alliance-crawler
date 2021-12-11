@@ -20,8 +20,9 @@ struct vertex_queue {
 	struct vertex_queue_node * last;
 };
 
-struct edge_ek_decorator {
-	struct vertex * from;
+struct edge_ek {
+    struct edge e;
+	struct vertex_ek * from;
 	int64_t f;
 };
 
@@ -31,7 +32,8 @@ struct vertex_path_node {
 	struct vertex_path_node * next;
 };
 
-struct vertex_ek_decorator {
+struct vertex_ek {
+    struct vertex v;
 	int visited;
 	int64_t min_path_cf;
 	// Path taken to get to this vertex - Linked List
@@ -40,10 +42,10 @@ struct vertex_ek_decorator {
 
 int64_t capacity(struct vertex * from, struct edge * e, struct vertex * source, struct vertex * target, int64_t k);
 
-int64_t ford_fulkerson(struct graph * g, struct vertex * source, struct vertex * target, int64_t k);
+int64_t ford_fulkerson(struct graph * g, struct vertex_ek * source, struct vertex_ek * target, int64_t k);
 
-int64_t edmonds_karp(struct graph* g, struct vertex* source, struct vertex* target, int64_t k);
-void free_edge_ek_decorators(struct graph * g);
+int64_t edmonds_karp(struct graph* g, struct vertex_ek * source, struct vertex_ek * target, int64_t k);
+// void free_edge_ek_decorators(struct graph * g);
 
 struct graph* max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target);
 
