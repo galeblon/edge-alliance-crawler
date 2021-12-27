@@ -48,6 +48,6 @@ void free_vertex_ek_decorators(struct graph* g);
 
 struct vertex** source_component_min_cut_after_max_flow(struct graph* g, struct vertex* source, struct vertex* target, uint64_t k, uint64_t* source_component_size);
 
-struct graph* max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target);
+struct vertex** max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target);
 
 #endif /* MAX_FLOW_ALGORITHMS_H_ */
