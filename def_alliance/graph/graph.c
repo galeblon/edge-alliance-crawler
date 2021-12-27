@@ -13,8 +13,7 @@ static void error(const char * msg)
 
 struct graph new_graph(uint64_t nvertices)
 {
-    struct graph g;
-    g.n = nvertices;
+    struct graph g = {.n = nvertices};
 
     if (g.n == 0) {
         return g;
@@ -145,13 +144,13 @@ void print_graph(struct graph * g)
     struct edge * e;
     struct vertex* v;
 
-    printf("N=%lu\n", g->n);
+    printf("N=%llu\n", g->n);
     v = g->v;
     while (v) {
-        printf("  %lu :", v->id);
+        printf("  %llu :", v->id);
         e = v->edge;
         while (e) {
-            printf(" %lu", e->to->id);
+            printf(" %llu", e->to->id);
             e = e->next;
         }
         printf(";\n");
@@ -179,7 +178,7 @@ uint64_t get_indegree(struct graph* g, struct vertex * v)
     return deg;
 }
 
-uint64_t get_outdegree(struct vertex * v)
+uint64_t get_outdegree(struct graph* g, struct vertex * v)
 {
     uint64_t deg = 0;
     struct edge* e = v->edge;
@@ -190,10 +189,10 @@ uint64_t get_outdegree(struct vertex * v)
     return deg;
 }
 
-uint64_t get_degree(struct vertex * v)
+uint64_t get_degree(struct graph * g, struct vertex * v)
 {
     // As degree pertains to a simple graph and this is a digraph, this should be equal
-    return get_outdegree(v);
+    return get_outdegree(g, v);
 }
 
 uint64_t get_degree_graph(struct graph * g)
@@ -203,7 +202,7 @@ uint64_t get_degree_graph(struct graph * g)
 
     v = g->v;
     while (v) {
-        v_deg = get_degree(v);
+        v_deg = get_degree(g, v);
         deg = v_deg > deg ? v_deg : deg;
     }
 
@@ -219,7 +218,7 @@ int is_balanced(struct graph * g)
     v = g->v;
     while (v) {
         v_indeg = get_indegree(g, v);
-        v_outdeg = get_outdegree(v);
+        v_outdeg = get_outdegree(g, v);
         balanced &= (v_indeg == v_outdeg);
     }
 
@@ -241,12 +240,16 @@ struct vertex * add_vertex(struct graph * g)
 
         g->v = malloc(sizeof(struct vertex));
         v = g->v;
+        if (v == NULL)
+            exit(-1);
         v->next = next;
     }
     else {
         // There are no vertices for this graph yet
         g->v = malloc(sizeof(struct vertex));
         v = g->v;
+        if (v == NULL)
+            exit(-1);
         v->next = NULL;
     }
 
@@ -322,14 +325,14 @@ int N_inverse(uint64_t * out, const char * bytes)
     } else if (bytes[1] != 126) {
         // N is encoded on bytes 1:3
         for (int i = 3; i >= 1; i--) {
-            result += (bytes[i] - 63)  * multiplier;
+            result += (uint64_t)(bytes[i] - 63) * multiplier;
             multiplier *= 64;  // each byte/character contains 6 bits
         }
         nbytes = 4;
     } else {
         // N is encoded on bytes 2:8
         for (int i = 8; i >= 2; i--) {
-            result += (bytes[i] - 63)  * multiplier;
+            result += (uint64_t)(bytes[i] - 63) * multiplier;
             multiplier *= 64;  // each byte/character contains 6 bits
         }
         nbytes = 8;

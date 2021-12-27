@@ -33,21 +33,21 @@ struct vertex_path_node {
 
 struct vertex_ek_decorator {
 	int visited;
-	int64_t min_path_cf;
+	uint64_t min_path_cf;
 	// Path taken to get to this vertex - Linked List
 	struct vertex_path_node * next;
 };
 
-int64_t capacity(struct vertex * from, struct edge * e, struct vertex * source, struct vertex * target, int64_t k);
+uint64_t capacity(struct vertex * from, struct edge * e, struct vertex * source, struct vertex * target, uint64_t k);
 
-int64_t ford_fulkerson(struct graph * g, struct vertex * source, struct vertex * target, int64_t k);
+int64_t ford_fulkerson(struct graph * g, struct vertex * source, struct vertex * target, uint64_t k);
 
-int64_t edmonds_karp(struct graph* g, struct vertex* source, struct vertex* target, int64_t k);
+int64_t edmonds_karp(struct graph* g, struct vertex* source, struct vertex* target, uint64_t k);
 void free_edge_ek_decorators(struct graph * g);
 void free_vertex_ek_decorators(struct graph* g);
 
 struct vertex** source_component_min_cut_after_max_flow(struct graph* g, struct vertex* source, struct vertex* target, uint64_t k, uint64_t* source_component_size);
 
-struct vertex** max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target);
+//struct vertex** max_flow_cut(struct graph* g, struct vertex* source, struct vertex* target);
 
 #endif /* MAX_FLOW_ALGORITHMS_H_ */

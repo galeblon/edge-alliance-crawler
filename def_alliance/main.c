@@ -6,7 +6,7 @@ int main(void)
     // Max Flow Tests
     // START 1
     // Setup
-    int64_t k = 4;
+    uint64_t k = 4;
     struct graph g_flow;
     g_flow = parse_graph6("E?Fg"); // Catholic cross graph
     struct vertex* v_flow_source = add_vertex(&g_flow);

@@ -1,6 +1,7 @@
 #include "max_flow.h"
+#include "stdio.h"
 
-int64_t capacity(struct vertex * from, struct edge * e, struct vertex * source, struct vertex * target, uint64_t k)
+uint64_t capacity(struct vertex * from, struct edge * e, struct vertex * source, struct vertex * target, uint64_t k)
 {
 	if (from == source)
 	{
@@ -21,6 +22,8 @@ int64_t ford_fulkerson(struct graph * g, struct vertex * source, struct vertex *
 struct vertex_queue * create_vertex_queue()
 {
 	struct vertex_queue * v_q = malloc(sizeof(struct vertex_queue));
+	if (v_q == NULL)
+		exit(-1);
 
 	v_q->first = NULL;
 	v_q->last = NULL;
@@ -60,7 +63,7 @@ struct vertex_queue_node* vertex_queue_pop(struct vertex_queue * v_q)
 		v_q->first = NULL;
 		v_q->last = NULL;
 	}
-	else
+	else if(v_q->first != NULL)
 	{
 		v_q->first->next->prev = NULL;
 
@@ -78,27 +81,27 @@ void print_graph_ek(struct graph * g)
 	struct vertex_ek_decorator* v_e_d;
 	struct vertex_path_node* v_p_n;
 
-	printf("N=%lu\n", g->n);
+	printf("N=%llu\n", g->n);
 	v = g->v;
 	while (v) {
-		printf("  V_id=%lu :\n", v->id);
+		printf("  V_id=%llu :\n", v->id);
 
 		printf("    EK :\n");
 		v_e_d = (struct vertex_ek_decorator*)v->decorator;
 		printf("      Vis=%lu\n", v_e_d->visited);
-		printf("      mcf=%lu\n", v_e_d->min_path_cf);
+		printf("      mcf=%llu\n", v_e_d->min_path_cf);
 		printf("      PATH :\n");
 		v_p_n = v_e_d->next;
 		while (v_p_n) {
 			e_e_d = (struct edge_ek_decorator *)v_p_n->e->decorator;
-			printf("        E=(%lu, %lu) - f:%lu\n", e_e_d->from->id, v_p_n->e->to->id, e_e_d->f);
+			printf("        E=(%llu, %llu) - f:%llu\n", e_e_d->from->id, v_p_n->e->to->id, e_e_d->f);
 			v_p_n = v_p_n->next;
 		}
 
 		printf("    EDGES :\n");
 		e = v->edge;
 		while (e) {
-			printf("      E_to=%lu\n", e->to->id);
+			printf("      E_to=%llu\n", e->to->id);
 			e = e->next;
 		}
 		printf(";\n");
@@ -125,6 +128,8 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 	v = g->v;
 	while (v) {
 		v_e_d = malloc(sizeof(struct vertex_ek_decorator));
+		if (v_e_d == NULL)
+			exit(-1);
 		v->decorator = (void *)v_e_d;
 		v_e_d->visited = (v == source) ? 1 : 0;
 		v_e_d->min_path_cf = 0;
@@ -134,6 +139,8 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 
 		while (e) {
 			e_e_d = malloc(sizeof(struct edge_ek_decorator));
+			if (e_e_d == NULL)
+				exit(-1);
 			e->decorator = (void *)e_e_d;
 			e_e_d->f = 0;
 
@@ -155,6 +162,8 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 		}
 		found_new_path = 0; 
 		v_q_n = malloc(sizeof(struct vertex_queue_node));
+		if (v_q_n == NULL)
+			exit(-1);
 		v_q_n->v = source;
 		vertex_queue_push(v_q, v_q_n);
 
@@ -169,6 +178,8 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 				v_e_d = (struct vertex_ek_decorator*)e->to->decorator;
 				if (!v_e_d->visited) {
 					v_q_n = malloc(sizeof(struct vertex_queue_node));
+					if (v_q_n == NULL)
+						exit(-1);
 					v_q_n->v = e->to;
 
 					e_e_d = (struct edge_ek_decorator *)e->decorator;
@@ -182,6 +193,8 @@ int64_t edmonds_karp(struct graph * g, struct vertex * source, struct vertex * t
 						v_e_d = (struct vertex_ek_decorator*)e->to->decorator;
 						v_e_d->next = v_p_n;
 						v_p_n = malloc(sizeof(struct vertex_path_node));
+						if (v_p_n == NULL)
+							exit(-1);
 						v_p_n->e = e;
 						v_p_n->next = v_e_d->next;
 						v_e_d->next = v_p_n;
@@ -266,12 +279,16 @@ struct vertex * * source_component_min_cut_after_max_flow(struct graph * g, stru
 	struct vertex_queue* v_q = create_vertex_queue();
 
 	uint64_t index = 0, size = 1;
-	struct vertex** result = malloc(size * sizeof(struct vertex*));
+	struct vertex** result = malloc((size_t)size * sizeof(struct vertex*));
+	if (result == NULL)
+		exit(-1);
 	struct edge * e;
 	struct vertex * v;
 	struct vertex_ek_decorator* v_e_d;
 	struct edge_ek_decorator* e_e_d;
 	struct vertex_queue_node* v_q_n = malloc(sizeof(struct vertex_queue_node));
+	if (v_q_n == NULL)
+		exit(-1);
 	v_q_n->v = source;
 	vertex_queue_push(v_q, v_q_n);
 
@@ -292,7 +309,10 @@ struct vertex * * source_component_min_cut_after_max_flow(struct graph * g, stru
 		if (index >= size)
 		{
 			size *= 2;
-			result = realloc(result, size * sizeof(struct vertex*));
+			struct vertex** tmp = realloc(result, (size_t)size * sizeof(struct vertex*));
+			if (tmp == NULL)
+				exit(-1);
+			result = tmp;
 		}
 		result[index] = v;
 		index++;
@@ -309,6 +329,8 @@ struct vertex * * source_component_min_cut_after_max_flow(struct graph * g, stru
 			{
 				v_e_d->visited = 1;
 				v_q_n = malloc(sizeof(struct vertex_queue_node));
+				if (v_q_n == NULL)
+					exit(-1);
 				v_q_n->v = e->to;
 				vertex_queue_push(v_q, v_q_n);
 			}
@@ -317,14 +339,16 @@ struct vertex * * source_component_min_cut_after_max_flow(struct graph * g, stru
 		}
 	}
 
-	result = realloc(result, index * sizeof(struct vertex*));
+	struct vertex** tmp = realloc(result, (size_t)index * sizeof(struct vertex*));
+	if (tmp == NULL)
+		exit(-1);
+	result = tmp;
 	*source_component_size = index;
 	return result;
 }
 
 void free_vertex_ek_decorators(struct graph* g)
 {
-	struct edge* e;
 	struct vertex* v;
 	struct vertex_ek_decorator * v_e_d;
 
