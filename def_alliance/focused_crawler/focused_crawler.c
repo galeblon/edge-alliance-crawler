@@ -128,6 +128,7 @@ struct vertex** max_flow_cut(struct graph* g, struct vertex* source, struct vert
 	return c_list;
 }
 
+// TODO save to file updated seed each iteration
 // G is assumed to be a giant graph resulting from extensive web crawling
 struct vertex** focused_crawl(struct graph* G, struct vertex* seed_list[], uint64_t iterations, uint64_t* k)
 {
