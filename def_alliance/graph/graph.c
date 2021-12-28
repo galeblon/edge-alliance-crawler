@@ -173,6 +173,7 @@ uint64_t get_indegree(struct graph* g, struct vertex * v)
             }
             e = e->next;
         }
+        v_checked = v_checked->next;
     }
 
     return deg;
@@ -225,9 +226,48 @@ int is_balanced(struct graph * g)
     return balanced;
 }
 
-// TODO Add vertex if given id is not already present, otherwise return existing vertex
+// Add vertex if given id is not already present, otherwise return existing vertex
 struct vertex * add_vertex_unique(struct graph *g, uint64_t id) {
-	return NULL;
+    struct vertex* v = NULL;
+
+    if (g->v) {
+        struct vertex* curr = g->v;
+        while (curr) {
+            if (curr->id == id) {
+                return curr;
+            }
+            curr = curr->next;
+        }
+
+        struct vertex* next = g->v;
+
+        g->v = malloc(sizeof(struct vertex));
+        v = g->v;
+        if (v == NULL)
+            exit(-1);
+        v->next = next;
+    }
+    else {
+        // There are no vertices for this graph yet
+        g->v = malloc(sizeof(struct vertex));
+        v = g->v;
+        if (v == NULL)
+            exit(-1);
+        v->next = NULL;
+    }
+
+    if (!g->v) {
+        error("Memory allocation for vertex failed");
+        return NULL;
+    }
+
+    v->edge = NULL;
+    g->id_tally = g->id_tally <= id ? id + 1 : g->id_tally;
+    v->id = id;
+
+    g->n++;
+
+    return v;
 }
 
 // Add vertex at the start of the vertex linked list. The list is not ordered by index.

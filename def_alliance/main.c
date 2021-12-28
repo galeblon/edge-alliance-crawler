@@ -1,5 +1,6 @@
 #include "./graph/graph.h"
 #include "./focused_crawler/max_flow.h"
+#include "./focused_crawler/focused_crawler.h"
 
 int main(void)
 {
@@ -89,6 +90,37 @@ int main(void)
     delete_graph(&g_cut);
     // END 1
     // End of Max Flow Min Cut Tests
+
+
+    // Focused Crawl Tests
+    // START 1
+    // Setup
+    uint64_t seed_len = 2;
+    k = 4;
+    struct graph g_com = new_graph(k + 5); // Layers: source, two vertices, one vertex, one vertex, k+1 vertices, target
+    v_cut_source = add_vertex(&g_com);
+    v_cut_target = add_vertex(&g_com);
+    add_edge(v_cut_source, get_vertex(&g_com, 0));
+    add_edge(v_cut_source, get_vertex(&g_com, 1));
+    add_edge(get_vertex(&g_com, 0), get_vertex(&g_com, 2));
+    add_edge(get_vertex(&g_com, 1), get_vertex(&g_com, 2));
+    add_edge(get_vertex(&g_com, 2), get_vertex(&g_com, 3));
+    struct vertex* seed_list[] = { get_vertex(&g_com, 0), get_vertex(&g_com, 1) };
+    for (uint64_t i = 0; i < k + 1; i++)
+    {
+        add_edge(get_vertex(&g_com, 3), get_vertex(&g_com, 4 + i));
+        add_edge(get_vertex(&g_com, 4 + i), v_cut_target);
+    }
+
+    // Execute
+    struct vertex** community_list = focused_crawl(&g_com, seed_list, 4, &seed_len); // Community should consist of vertices: 0, 1, 2
+
+    // Teardown
+    free(community_list);
+    delete_graph(&g_com);
+    // END 1
+    // End of Focused Crawl Tests
+
 
     struct graph g;
     g = parse_graph6("I?rFUzsjw");
