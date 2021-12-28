@@ -153,13 +153,18 @@ int main(int argc, char** argv)
 {
     //debugTests();
 
+    // 11k vertices graphs
     char* graphRaw = readFile("../graph.g6");
     struct graph g = parse_graph6(graphRaw);
     uint64_t seed_len = 3;
     struct vertex* seed_list[] = { get_vertex(&g, 0), get_vertex(&g, 1), get_vertex(&g, 2)};
 
+    // this finished in milliseconds
     struct vertex** community_list = focused_crawl(&g, seed_list, 4, &seed_len);
 
+    // Resulting community:
+    // [0, 1, 2, 6, 9, 6, 22, 17, 19, 20, 39, 44, 61, 43]
+    // To check with meta portion of .json file.
     free(community_list);
     delete_graph(&g);
 
