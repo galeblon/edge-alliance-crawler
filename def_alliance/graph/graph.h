@@ -62,6 +62,4 @@ struct vertex * add_vertex_unique(struct graph* g, uint64_t id);
 void isolate_vertex(struct graph* g, struct vertex* v);
 void delete_vertex(struct graph* g, struct vertex* v);
 
-// TODO edge capacities
-
 #endif
