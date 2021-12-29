@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 import sys
 
 if len(sys.argv) < 3:
@@ -7,8 +8,8 @@ if len(sys.argv) < 3:
     exit(1)
 
 community = list((pd.read_csv(sys.argv[1], usecols=[0], names=['0']))['0'])
-raw = pd.read_json(sys.argv[2])
-meta = raw.meta
+raw = json.load(open(sys.argv[2]))
+meta = (pd.DataFrame(raw['meta']))['address']
 
 for vertex in community:
-    print(meta[vertex]['address'])
+    print(meta[vertex])
