@@ -151,20 +151,31 @@ char* readFile(char* filename) {
 
 int main(int argc, char** argv)
 {
+    if (argc < 4) {
+        printf("Not enough arguments passed.\n");
+        printf("<.g6 file> <num of iterations> <seed vertices>");
+        exit(0);
+    }
     //debugTests();
 
-    // 11k vertices graphs
-    char* graphRaw = readFile("../graph.g6");
+    char* graphRaw = readFile(argv[1]);
+    int iterations = atoi(argv[2]);
+    uint64_t seed_len = argc - 3;
+    struct vertex** seed_list = (struct vertex**)malloc(sizeof(struct vertex*) * (size_t)seed_len);
+    if (seed_list == NULL)
+        exit(-1);
+
     struct graph g = parse_graph6(graphRaw);
-    uint64_t seed_len = 3;
-    struct vertex* seed_list[] = { get_vertex(&g, 0), get_vertex(&g, 1), get_vertex(&g, 2)};
+    for (int i = 0; i < seed_len; i++) {
+        seed_list[i] = get_vertex(&g, (uint64_t)atoi(argv[3 + i]));
+    }
 
-    // this finished in milliseconds
-    struct vertex** community_list = focused_crawl(&g, seed_list, 4, &seed_len);
+    struct vertex** community_list = focused_crawl(&g, seed_list, iterations, &seed_len);
 
-    // Resulting community:
-    // [0, 1, 2, 6, 9, 6, 22, 17, 19, 20, 39, 44, 61, 43]
-    // To check with meta portion of .json file.
+    for (uint64_t i = 0; i < seed_len; i++)
+        printf("%llu\n", community_list[i]->id);
+
+    free(graphRaw);
     free(community_list);
     delete_graph(&g);
 
