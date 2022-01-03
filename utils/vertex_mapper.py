@@ -3,7 +3,7 @@ import json
 import sys
 
 if len(sys.argv) < 3:
-    print("Not enought arguments.")
+    print("Not enough arguments.")
     print("<Community .csv file> <.json file>")
     exit(1)
 

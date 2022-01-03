@@ -133,7 +133,9 @@ struct vertex** max_flow_cut(struct graph* g, struct vertex* source, struct vert
 struct vertex** focused_crawl(struct graph* G, struct vertex* seed_list[], uint64_t iterations, uint64_t* k)
 {
 	// seed_list refers to vertices from global G graph, translate them to smaller g graph
-	struct vertex** local_seed_list = malloc(sizeof(struct vertex*)*(size_t)k);
+	struct vertex** local_seed_list = malloc(sizeof(struct vertex*)*(size_t)*k);
+	if (local_seed_list == NULL)
+		exit(-1);
 	struct vertex** local_seed_tmp = NULL;
 	struct vertex* s = NULL;
 	struct vertex* t = NULL;
@@ -152,7 +154,9 @@ struct vertex** focused_crawl(struct graph* G, struct vertex* seed_list[], uint6
 		local_seed_list = extend_list_by_metric_value(&g, s, local_seed_list, k, c_list, c_len, get_outdegree, max_outdegree, s, t);
 
 		// Re-crawl G and reinduce the graph
-		local_seed_tmp = malloc(sizeof(struct vertex*) * (size_t)k);
+		local_seed_tmp = malloc(sizeof(struct vertex*) * (size_t)*k);
+		if (local_seed_tmp == NULL)
+			exit(-1);
 		g_tmp = induce_graph_from_crawl(G, local_seed_list, local_seed_tmp, *k, &s, &t);
 		delete_graph(&g);
 		free(local_seed_list);
