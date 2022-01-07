@@ -1,0 +1,2 @@
+7depth 6rawlersc: 5 min crawling, 1 min json
+8depth 6crawlers: 42 min crawling, 7 min json
