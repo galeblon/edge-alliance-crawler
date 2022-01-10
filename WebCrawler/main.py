@@ -1,4 +1,4 @@
-from re import sub
+from re import sub, compile
 from math import sqrt
 from urllib.request import Request, urlopen, URLError
 from urllib.parse import urljoin, urlparse
@@ -25,7 +25,7 @@ urlblacklist = {
 }
 
 # Create www.-prefixed hostnames in addition to old ones
-urlblacklist = {f(url) for url in urlblacklist for f in (lambda x: x, lambda x: 'www.' + x)}
+urlblacklist = {f(url) for url in urlblacklist for f in (lambda x: compile(r'^[^/]*' + x + r'/?'),)}
 
 # Acceptable MIME types for link-searching
 # https://stackoverflow.com/a/10539075
@@ -104,6 +104,8 @@ class Crawler(threading.Thread):
 
                     i = 0
                     all_tags = soup.find_all('a')
+                    all_tags = list(all_tags)
+                    random.shuffle(all_tags)  # Randomise the order
                     while i < len(all_tags) and i < 20 + sqrt(len(all_tags)):
                         child_link = all_tags[i].get("href")
                         i = i + 1
@@ -115,7 +117,7 @@ class Crawler(threading.Thread):
                         child_domain = urlparse(child_link)[1]  # authority section of the HTTP/HTTPS URL
                         child_host = sub(r'^.*@', '', child_domain, 1)  # Remove userinfo
                         child_host = sub(r':.*$', '', child_host, 1)  # Remove port
-                        if (child_host in urlblacklist) or child_link.endswith('.pdf'):
+                        if any(regex.match(child_host) for regex in urlblacklist):
                             continue
 
                         if child_domain in self.domainDict.keys():
