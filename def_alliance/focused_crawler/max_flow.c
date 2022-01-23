@@ -7,10 +7,10 @@ uint64_t capacity(struct vertex * from, struct edge * e, struct vertex * source,
 	{
 		return UINT64_MAX; // +inf
 	}
-	if (e->to == target)
-	{
-		return 1;
-	}
+	//if (e->to == target)
+	//{
+	//	return 1;
+	//}
 	return k;
 }
 
