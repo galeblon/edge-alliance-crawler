@@ -62,7 +62,7 @@ uint64_t find_metric_max_value(
 				break;
 			}
 		}
-		if(skip_vertex)
+		if(skip_vertex || vertex == s || vertex == t)
 			continue;
 		uint64_t metric_value = (*metric)(g, vertex);
 		if(metric_value > metric_max_value)

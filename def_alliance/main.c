@@ -135,7 +135,7 @@ void debugTests()
 }
 
 char* readFile(char* filename) {
-    FILE* f = fopen(filename, "rt");
+    FILE* f = fopen(filename, "r");
     assert(f);
     fseek(f, 0, SEEK_END);
     long length = ftell(f);
