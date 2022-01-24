@@ -84,12 +84,6 @@ class Crawler(threading.Thread):
             try:
                 domain = urlparse(link)[1]
 
-                if domain in self.domainDict.keys():
-                    rndm = self.prng.uniform(0, 15)
-                    sq = sqrt(self.domainDict[domain])
-                    if rndm < sq:
-                        continue
-
                 print(f"[{self.id}] Currently processing {link}")
                 request_headers = {'User-Agent': 'Mozilla/5.0'}
 
@@ -233,7 +227,7 @@ if __name__ == '__main__':
         nodeDescriptions.append({'address': node})
 
     crawlMeta = {'total_crawlers': totalCrawlers, 'crawlers': crawlerDescriptions}
-    graphDescription = {'graph': g6, 'meta': nodeDescriptions, 'crawl_meta': crawlMeta}
+    graphDescription = {'meta': nodeDescriptions, 'crawl_meta': crawlMeta}
     js = json.dumps(graphDescription, indent=4)
 
     final = open('output.json', "w").write(js)
